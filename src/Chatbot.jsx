@@ -4,7 +4,7 @@ import "./Chatbot.css";
 function Chatbot() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
+const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [voices, setVoices] = useState([]);
 
   const [messages, setMessages] = useState([
