@@ -1,18 +1,22 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import "./Chatbot.css";
 
 function Chatbot() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [message, setMessage] = useState("");
-const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [voices, setVoices] = useState([]);
+  const [hasWelcomed, setHasWelcomed] = useState(false);
+
+  const welcomeText =
+    "Hello! Welcome to Charan's Portfolio. I'm his virtual assistant. I'd love to help you explore his skills, projects and experience. What would you like to know?";
 
   const [messages, setMessages] = useState([
-    {
-      sender: "assistant",
-      text: "Hello! 👋 Welcome to Charan's Portfolio. I'm his virtual assistant. What would you like to know?"
-    }
+    { sender: "assistant", text: welcomeText }
   ]);
+
+  const welcomeSpoken = useRef(false);
 
   useEffect(() => {
     function loadVoices() {
@@ -37,7 +41,9 @@ const [voiceEnabled, setVoiceEnabled] = useState(true);
     const femaleVoice = voices.find(
       (voice) =>
         voice.lang.startsWith("en") &&
-        /zira|samantha|jenny|aria|ava|susan|karen|female/i.test(voice.name)
+        /zira|samantha|jenny|aria|ava|susan|karen|female/i.test(
+          voice.name
+        )
     );
 
     const naturalVoice = voices.find(
@@ -50,7 +56,9 @@ const [voiceEnabled, setVoiceEnabled] = useState(true);
       (voice) => voice.lang === "en-US"
     );
 
-    speech.voice = femaleVoice || naturalVoice || englishVoice || null;
+    speech.voice =
+      femaleVoice || naturalVoice || englishVoice || null;
+
     speech.lang = "en-US";
     speech.rate = 0.9;
     speech.pitch = 1.1;
@@ -59,13 +67,38 @@ const [voiceEnabled, setVoiceEnabled] = useState(true);
     window.speechSynthesis.speak(speech);
   }
 
+  useEffect(() => {
+    function welcomeVisitor() {
+      if (welcomeSpoken.current || !voiceEnabled) return;
+
+      welcomeSpoken.current = true;
+      setHasWelcomed(true);
+      speakText(welcomeText, true);
+
+      document.removeEventListener("click", welcomeVisitor);
+    }
+
+    document.addEventListener("click", welcomeVisitor);
+
+    return () => {
+      document.removeEventListener("click", welcomeVisitor);
+    };
+  }, [voiceEnabled, voices]);
+
   function toggleVoice() {
     if (voiceEnabled) {
       window.speechSynthesis.cancel();
       setVoiceEnabled(false);
     } else {
       setVoiceEnabled(true);
-      speakText(messages[0].text, true);
+
+      if (!welcomeSpoken.current) {
+        welcomeSpoken.current = true;
+        setHasWelcomed(true);
+        speakText(welcomeText, true);
+      } else {
+        speakText(messages[messages.length - 1].text, true);
+      }
     }
   }
 
@@ -89,7 +122,7 @@ const [voiceEnabled, setVoiceEnabled] = useState(true);
     }
 
     if (q.includes("hello") || q.includes("hi") || q.includes("hey")) {
-      return "Hello there! 😊 Nice to meet you. What would you like to know about Charan?";
+      return "Hello there! Nice to meet you. What would you like to know about Charan?";
     }
 
     return "That's an interesting question! I don't have that information yet, but I can tell you about Charan's education, skills and projects.";
@@ -134,7 +167,10 @@ const [voiceEnabled, setVoiceEnabled] = useState(true);
             </div>
 
             <div className="chat-actions">
-              <button onClick={toggleVoice}>
+              <button
+                onClick={toggleVoice}
+                title={voiceEnabled ? "Mute voice" : "Enable voice"}
+              >
                 {voiceEnabled ? "🔊" : "🔇"}
               </button>
 
