@@ -1,6 +1,7 @@
 
 import "./App.css";
 import Chatbot from "./Chatbot";
+import VisitorCounter from "./VisitorCounter";
 
 function App() {
   return (
@@ -168,6 +169,7 @@ function App() {
       </footer>
 
       <Chatbot />
+      <VisitorCounter />
     </div>
   );
 }
